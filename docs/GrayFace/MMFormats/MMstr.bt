@@ -1,0 +1,60 @@
+
+local int evt_changed = false;
+
+// -----------------------------------------------------------------------------
+//  TString
+
+typedef struct
+{
+  string Str;
+  local uint SizePtr = -1;
+  
+} TString <read=ReadTString, write=WriteTString>;
+
+string ReadTString(TString &a)
+{
+  if (evt_changed)
+    return "Press F10";
+  else
+    return a.Str;
+}
+
+void WriteTString(TString &a, string str)
+{
+  if (evt_changed) return;
+
+  int oldLen = sizeof(a.Str) - 1;
+  int newLen = sizeof(str) - 1; // no null-character
+  if (newLen < 0)
+    newLen = 0;
+  int pos = startof(a);
+  evt_changed = true;
+  if (oldLen > newLen)
+    DeleteBytes(pos + newLen, oldLen - newLen);
+  else
+    if (oldLen < newLen)
+      InsertBytes(pos + oldLen, newLen - oldLen);
+    else
+      evt_changed = false;
+    
+  if (newLen > 0)
+    WriteBytes(str, pos, newLen);
+  
+  pos = a.SizePtr;
+  if (pos < 0) return;
+  
+  WriteUInt(pos, ReadUInt(pos) + newLen - oldLen);
+}
+
+
+// -----------------------------------------------------------------------------
+// File 
+// -----------------------------------------------------------------------------
+
+LittleEndian();
+BitfieldEnablePadding();
+
+while(FTell() != FileSize())
+{
+  TString Lines;
+}

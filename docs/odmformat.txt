@@ -1,0 +1,110 @@
+A0 - tilesets см dtile.bin
+
+mm6,mm7 	0xb0
+mm8		0xb4
+grastyl 
+	0x4000	карта высот(Height Map)
+	tilesize = 512 , heightsize = 64
+	0x4000  карта типа поверхности - определяет также текстуру (TileMap)
+	0x4000  хз возможно всегда нули (ZEROED_MAP)
+
+only mm7,mm8
+{
+	CMAP	num1,0x20000  0x10000 
+	TerNorm num1*12  // short line[2][3] - 2 точки
+	визуально ничего не меняется - возможно данные для более быстрой отрисовки
+}
+
+num2	
+BDdata	num2*0xbc
+-- fills on load
+00: nn nn nn nn nn nn nn nn nn nn nn nn nn nn nn nn  //name1
+10: nn nn nn nn nn nn nn nn nn nn nn nn nn nn nn nn
+20: nn nn nn nn nn nn nn nn nn nn nn nn nn nn nn nn  //name2
+30: nn nn nn nn nn nn nn nn nn nn nn nn nn nn nn nn
+40: 00 00 00 00 nv nv nv nv -- -- -- -- nf nf nf nf  numvert numfaces
+50: 00 00 00 00 -- -- -- -- -- -- -- -- n3 n3 n3 n3 
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+70: 20 CB FF FF C0 E0 FF FF 80 02 00 00 78 CA FF FF  origin int[3] bbox int[2][3]
+80: C0 E0 FF FF 80 02 00 00 C8 CB FF FF 40 E9 FF FF  bbox
+90: 80 03 00 00 48 00 00 00 5C 00 00 00 00 00 00 00  bbox,  hz int[3]
+a0: 3E 00 00 00 61 00 00 00 00 00 00 00 20 CB FF FF  hz int[3], origin2
+b0: 00 E5 FF FF E2 08 00 00 4D 04 00 00 
+
+	off	size	desc
+	0	0x20	name1
+	0x20	0x20	name2
+	0x40	0x4	hz
+	0x44	0x4	num vertexs
+	0x48	0x4  	int - pointer to vertexes(fill on load)
+	0x4c	0x4	num faces
+	0x50	0x20	
+	0x5c	4	int - num3
+
+	0x70	0xc	int[3] 		origin (z- уровень пола?)
+	0x7c	0x18    int[2][3]       bbox
+	0x94	0x18	int[6] 		hz
+	0xac	0xc	int[3] 		origin2 - геометрический центр (z обычно не там)
+	0xb8	4	hz
+
+
+доп дата для BDData
+ numt = BDData[i*0xbc + 0x44] -- vertexs
+ size = numt*3*4 - int point[3]
+ numt2 = BDData[i*0xbc + 0x4c]-- faces
+ size2 = numt2*0x134
+ 	0x20 	- short[6][0x14] - vidx tex_c[2] hz[3]
+ 	0x110   2	hz
+ 	                -max_tex_c[0] ??
+ 	                -max_tex_c[1] ??
+ 	                minx
+ 	                maxx
+ 	                miny
+ 	                maxy
+ 	                minz
+ 	                maxz
+ 	 0x122		
+
+000: 00 00 00 00 00 00 00 00 00 00 01 00 00 00 00 FD ??int[3]   - normal * 65536,   yy = *(int*)(data+0xc) * 65536 -plane dist
+010: 00 00 00 00 00 00 00 00 00 00 00 03 00 01 00 00 
+020: vv vv vv vv vv vv vv vv vv vv vv vv vv vv vv vv   vv - short vertex_indexs[0x14] 
+030: vv vv vv vv vv vv vv vv vv vv vv vv vv vv vv vv
+040: vv vv vv vv vv vv vv vv t1 t1 t1 t1 t1 t1 t1 t1   t1 - short texc_s[0x14] 
+050: t1 t1 t1 t1 t1 t1 t1 t1 t1 t1 t1 t1 t1 t1 t1 t1
+060: t1 t1 t1 t1 t1 t1 t1 t1 t1 t1 t1 t1 t1 t1 t1 t1 
+070: t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2   t2 - short texc_t[0x14] 
+080: t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2 t2  
+090: t2 t2 t2 t2 t2 t2 t2 t2 h1 h1 h1 h1 h1 h1 h1 h1    short hz[3][0x14] - [-3;3] numbers
+0A0: h1 h1 h1 h1 h1 h1 h1 h1 h1 h1 h1 h1 h1 h1 h1 h1 
+0B0: h1 h1 h1 h1 h1 h1 h1 h1 h1 h1 h1 h1 h1 h1 h1 h1 
+0C0: h2 h2 h2 h2 h2 h2 h2 h2 h2 h2 h2 h2 h2 h2 h2 h2
+0D0: h2 h2 h2 h2 h2 h2 h2 h2 h2 h2 h2 h2 h2 h2 h2 h2
+0E0: h2 h2 h2 h2 h2 h2 h2 h2 h3 h3 h3 h3 h3 h3 h3 h3
+0F0: h3 h3 h3 h3 h3 h3 h3 h3 h3 h3 h3 h3 h3 h3 h3 h3
+100: h3 h3 h3 h3 h3 h3 h3 h3 h3 h3 h3 h3 h3 h3 h3 h3 
+110: 00 00 dtexs dtext min x max x min y max y min z 
+120: max z 00 00 00 00 00 00 00 00 00 01 03 FF nv 03 nv - num_vertexes
+130: 00 00 F2 A0 
+
+
+ size3 = numt2*2
+ numt3 = BDData[i*0xbc + 0x5c] 
+ size4 = numt3*8 
+ size5 = numt2*10 -- texnames
+
+//Sprites 
+num3 (must be <= 0xbb8) -- entites like 'tree' 'PartyStart'
+mm7,mm8 - num3*32  
+mm6 	- num3*0x1c
+
+num3* 0x20  - ent names
+
+num4
+IDLIST	num4*2
+
+OMAP	0x10000  
+
+num5	
+Spawn	
+	mm7,mm8 - num5*24
+	mm6 	- num5*20

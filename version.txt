@@ -1,0 +1,9 @@
+1.01
+fixed crash on faces with zero vertexes
+min freq no 60 (for LCD monitors)
+in window mode allow any resolution
+
+1.02
+fixed crash on select face (mm8 d18.blv)
+1.02a 
+fixed crash on select portal

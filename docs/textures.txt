@@ -1,0 +1,20 @@
+Map Viewer bytes:
+дл€ стен с мен€ющейс€ текстурой
+
+Outdoors:
+
+010: the last 4 are Bits.
+120: word unk, word FaceID, ...
+
+
+Indoors:
+010(after event#): byte unk[8], word FaceID
+
+
+enum <int> TFaceBit
+{
+  fb_Invisible        = 0x00002000,
+  fb_Untouchable    = 0x20000000,
+  fb_TriggerByClick    = 0x02000000,
+  fb_TriggerByTouch    = 0x00080000
+};

@@ -1,0 +1,129 @@
+
+local int MMVersion = 7;
+typedef ushort EvtVarBase;
+
+// Not for sure:
+
+enum <EvtVarBase> EvtVar
+{
+// 01 = ?
+  Class 		= 0x02,
+  CurrentHP		= 0x03,
+  HasFullHP		= 0x04,
+  CurrentSP		= 0x05,
+  HasFullSP		= 0x06,
+  ArmorClass 		= 0x07,
+  ArmorClassBonus	= 0x08,
+  BaseLevel 		= 0x09,
+  LevelBonus		= 0x0A,
+  AgeBonus		= 0x0B,
+  Award 		= 0x0C,
+  Experience		= 0x0D,
+  
+  QBits_QuestsDone	= 0x10,
+  Inventory		= 0x11,
+  
+  Gold  		= 0x15,
+  Gold2 		= 0x16,
+  Food  		= 0x17,
+  Food2 		= 0x18,
+  MightBonus		= 0x19,
+  IntellectBonus	= 0x1A,
+  PersonalityBonus	= 0x1B,
+  EnduranceBonus 	= 0x1C,
+  SpeedBonus		= 0x1D,
+  AccuracyBonus 	= 0x1E,
+  LuckBonus		= 0x1F,
+  BaseMight 		= 0x20,
+  BaseIntellect 	= 0x21,
+  BasePersonality	= 0x22,
+  BaseEndurance		= 0x23,
+  BaseSpeed 		= 0x24,
+  BaseAccuracy		= 0x25,
+  BaseLuck 	 	= 0x26,
+  CurrentMight		= 0x27,
+  CurrentIntellect	= 0x28,
+  CurrentPersonality	= 0x29,
+  CurrentEndurance	= 0x2A,
+  CurrentSpeed		= 0x2B,
+  CurrentAccuracy	= 0x2C,
+  CurrentLuck		= 0x2D,
+
+  /* MM6:
+
+  FireResistance	= 0x2E,
+  ElectricityResistance	= 0x2F,
+  ColdResistance	= 0x30,
+  PoisonResistance	= 0x31,
+  MagicResistance	= 0x32,
+  FireResBonus		= 0x33,
+  ElectricityResBonus	= 0x34,
+  ColdResBonus		= 0x35,
+  PoisonResBonus	= 0x36,
+  MagicResBonus		= 0x37,
+  StaffSkill		= 0x38,
+  SwordSkill		= 0x39,
+  DaggerSkill		= 0x3A,
+  AxeSkill		= 0x3B,
+  SpearSkill		= 0x3C,
+  BowSkill		= 0x3D,
+  MaceSkill		= 0x3E,  
+  BlasterSkill		= 0x3F,
+  ShieldSkill		= 0x40,
+  LeatherSkill		= 0x41,
+  ChainSkill		= 0x42,
+  PlateSkill		= 0x43,
+  FireMagicSkill	= 0x44,
+  AirMagicSkill		= 0x45,
+  WaterMagicSkill	= 0x46,
+  EarthMagicSkill	= 0x47,
+  SpiritMagicSkill	= 0x48,
+  MindMagicSkill	= 0x49,
+  BodyMagicSkill	= 0x4A,
+  LightMagicSkill	= 0x4B,
+  DarkMagicSkill	= 0x4C,
+  // And so on...
+  
+  Cursed		= 0x57,
+  Weak			= 0x58,
+  Asleep		= 0x59,
+  Afraid		= 0x5A,
+  Drunk			= 0x5B,
+  Insane		= 0x5C,
+  PoisonedGreen		= 0x5D,
+  DiseasedGreen		= 0x5E,
+  PoisonedYellow	= 0x5F,
+  DiseasedYellow	= 0x60,
+  PoisonedRed		= 0x61,
+  DiseasedRed		= 0x62,
+  Paralysed		= 0x63,
+  Unconsious		= 0x64,
+  Dead			= 0x65,
+  Stoned		= 0x66,
+  Eradicated		= 0x67,
+  
+  */
+
+  // MM6: 69 - AE (maybe more) = local variables
+  //NPCs			= 0xD6
+  //Reputation		= 0xD7,
+  //ActiveSpells		= 0xDE,
+  //MonthEquals		= 0xE2,
+
+  Autonotes		= 0xDF,
+  
+  NPCs			= 0xE8
+  
+  // F7 - out02
+};
+
+enum <ubyte> TPartyMember
+{
+  Member0	= 0,
+  Member1	= 1,
+  Member2	= 2,
+  Member3	= 3,
+  Current	= 4,
+  All   	= 5,
+  Random	= 6
+};

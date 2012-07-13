@@ -1,0 +1,29 @@
+
+#include "MMevtInclude.bt"
+
+EvtGenerateWholeDescription = true;
+//EvtFilter = 0x00;
+
+// -----------------------------------------------------------------------------
+// File 
+// -----------------------------------------------------------------------------
+
+LittleEndian();
+BitfieldEnablePadding();
+
+if (EvtGenerateWholeDescription) 
+  TComment WholeFile;
+TComment Errors;
+  
+while(FTell() != FileSize())
+{
+  TEvtCommand Command;
+}
+
+
+
+/* ----------------------------------------------------------------------------
+/ mm_mapviewer:
+/ 04C: byte1 = event action type (1 - space press, 2 - touch)
+/
+*/

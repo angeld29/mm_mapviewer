@@ -1,0 +1,7 @@
+enum <int> TFaceBit
+{
+  fb_Invisible        = 0x00002000,
+  fb_Untouchable    = 0x20000000,
+  fb_TriggerByClick    = 0x02000000,
+  fb_TriggerByTouch    = 0x00080000
+};

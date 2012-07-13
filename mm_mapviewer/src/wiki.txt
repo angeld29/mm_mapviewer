@@ -1,0 +1,249 @@
+== Structure ==
+After decompression, a .BLV file is divided into different sections, each of which is explained below. All sections follow directly after each other, there's (apparently) no offset table or similar structure.
+
+=== Header ===
+
+The header is 0x88 bytes long and contains a description and some other (yet unknown) information for the level.
+
+<pre><nowiki>
+struct Header
+{
+  uint32 unknown1;         // maybe flags?
+  char description[76];    // maybe it's actually smaller and is followed by other data
+  char unknown2[24];       // some kind of reference? short-name for the level?
+  int32 wall_vertex_size,Rdatasize,RLdatasize;
+  int32 unksize2;
+  int32 unknown3[4];       
+};
+</nowiki></pre>
+
+=== Vertex data ===
+
+This section starts at offset 0x88 and contains the vertex data for the level. The first uint32 gives the number of vertices, directly followed by the vertex data as triplets of signed shorts, containing x, y and z-coordinate.
+
+<pre><nowiki>
+struct VertexSection
+{
+  uint32 numVertices;
+
+  struct Vertex
+  {
+    int16 x, y, z;
+  } Vertices[];
+};
+</nowiki></pre>
+
+The vertices should be numbered from 0 to <code>numVertices-1</code>, as that is how they are referenced later in the wallvertex section
+
+=== Wall data ===
+
+This section contains one entry for each wall or portal in the level, which contains a bounding box, the number of vertices for that face, and some unknown fields (probably animation related). Portals used for rendering.
+
+<pre><nowiki>
+
+struct WallData
+{
+  uint32 numWalls;
+
+  struct Wall
+  {
+#ifndef MM6
+    float normal_x,normal_y,normal_z,dist;   // plane by normal vector and dist from (0,0,0) //in mm7 and mm8, dont exist in mm6
+#endif
+    int i_normal_x,i_normal_y,i_normal_z,i_dist;   // plane by normal vector and point, all numbers multiply by 65536, so i_normal_x=int(normal_x*65536.0)
+    int16 unknown1[8];    // this is completely unknown stuff
+    int32 ingame_pointers[6]; //pointers on wall vertex data, filled by game on load(data in blv file not used)
+    int16 face_param_index;       // index in FaceParams array
+    int16 unknown3;
+    int16 sector_index[2]; //the indices of sectors(sectors section) in which is located the wall
+    int16 xmin, xmax;
+    int16 ymin, ymax;
+    int16 zmin, zmax;
+    char unknown2;        // maybe flags?
+    char numVertices;
+    int16 unknown3;       // reserved (always zero) ??
+  } walls[];
+};
+</nowiki></pre>
+
+The <code>xmin</code>, <code>xmax</code>, <code>ymin</code>, <code>ymax</code>, <code>zmin</code> and <code>zmax</code> fields contain a bounding box around the wall which was probably needed by the software renderer used in the game. And <code>numVertices</code> contains the number of vertices for this face, which are listed in the next section. Faces should also be counted from 0 to <code>numFaces</code>.
+
+=== Wall vertex list ===
+
+This section assigns the wall data above to the correct vertices. It follows directly after the previous section, this time without any header or length info at the beginning(length of this section in blv header, field 'wall_vertex_size'), just the raw data. That is possible because all relevant information is already known from the Wall data section.
+
+Because walls are polygons, they must be drawn as a closed loop through some number of (coplanar) vertices. The key is the word '''closed''' here, which means that for a wall which has <code>n</code> vertices, there are actually <code>n+1</code> vertex indices in this section, where the last index is always the same as the first one.
+
+Example: Suppose we have a wall with 12 vertices (as described in it's entry in the wall data section). This means that for this wall, we would have 13 entries here, for example 0x0f, 0x15, 0x01, 0x1a, 0x1a, 0x1c, 0x1c, 0x02, 0x18, 0x11, 0x0d, 0x0b, 0x0f. This is an actual example, taken from the level zddb02.blv (the first wall). I don't know why certain points appear two times in a row, I'm guessing it has something to do with normals or textures (see below for more guesses in that direction ;-). Important thing is that the last vertex is the same as the first one (0x0f).
+
+So we have to read <code>n+1</code> vertex indices for each wall. Directly after that, there is more data, which also seems to be repeated <code>n+1</code> times. Here's the structure which describes this, in pseudo-code:
+
+<pre><nowiki>
+struct WallVertices
+{
+  uint16 vertex[n+1];  // indexes in Vertices[] from VertexSection,which describe the wall boundary
+  uint16 x[n+1]; // not sure if this is actually vector (normals?) data.
+  uint16 y[n+1]; //
+  uint16 z[n+1]; //
+  uint16 x_off[n+1]; //Texture x-offset
+  uint16 y_off[n+1]; //Texture y-offset
+}
+</nowiki></pre>
+
+=== Texture section ===
+
+This section describes all textures used in the level. Each entry in the wall data section (see above) has one corresponding entry in this list. For each wall data entry, there's a 10-byte ASCIIZ string here describing the texture used by this particular wall. The string gives the filename of a [[.TGA]] file in the BITMAPS[[.LOD]] container file.
+
+Portals have emtry string name.
+
+=== FaceParams section ===
+
+This is another section which contains a counter:
+
+<pre><nowiki>
+struct FaceParams
+{
+  uint32 count; // one item size 0x24
+  struct FaceParamData
+  {
+    int16  unk1[6];
+    int16  someIndex;  // maybe index into texture list?
+    int16  unk2;       // always -1 ?
+    int16  unk3[2];
+    uint16 dx,dy;//texture deltas (off 0x14)
+    uint16 unk4;
+    uint16 event_n;// # of event in map evt file
+    int16 unk5[4];   // always 0 ?
+  } FaceParams[];//count items
+  struct FaceParam2
+  {
+    char unknown[10]; //may be name for second texture(usualy filled by zero)
+  } FaceParams2[];//count items
+
+};
+</nowiki></pre>
+Texture coordinats calculated as:
+ u= (wall_vertex.x_off+faceParam.dx)/texture.Width;
+ v= (wall_vertex.y_off+faceParam.dy)/texture.Height;
+=== Sectors section ===
+
+BLV map consists of the sectors of those connected by portals. This section consists of 3 parts, Sectors[] array, sectorsRdata, sectorsRLdata, witch follow directly after each other.
+
+<pre><nowiki>
+struct SectorsSection
+{
+  uint32 count; 
+  struct Sector
+  {
+#ifdef MM8
+    char unk[0x78]; 
+#else
+    char unk[0x74]; 
+#endif
+  } Sectors[];
+  char sectorsRdata[Header.Rdatasize];
+  char sectorsRLdata[Header.RLdatasize];
+};
+</nowiki></pre>
+
+=== Object section ===
+
+This section describes the objects found in the dungeon. It starts directly after the Sectors section and has the following format:
+
+<pre><nowiki>
+struct Object
+{
+  uint32 numUnknown;
+  uint32 numObjects;
+  struct Unk
+  {
+    int16 unk1;
+    int16 unk2;
+    int16 unk3[12];
+#ifdef MM7
+    int16 unk4[2];
+#endif
+#ifdef MM8
+    int16 unk4[2];
+#endif
+  } objectData[numObjects];
+  struct Name
+  {
+    char name[16];
+    int16 unk1[4];
+    int16 x;
+    int16 y;
+    int16 z;
+    int16 unk2;
+  } names[numObjects];
+};
+</nowiki></pre>
+
+=== LightSources section ===
+
+This section has the following format:
+<pre><nowiki>
+struct LightSources
+{
+  uint32 count;
+  struct light
+  {
+    int16 x,y,z;
+    int16 unk1;//usualy 0
+    int16 unk2;//usualy 31
+    int16 level;//light brightness
+#ifdef MM7
+    int16 unk4[2];//color i think
+#endif
+#ifdef MM8
+    int16 unk4[4];//color and something else
+#endif
+  } lights[n];
+};
+</nowiki></pre>
+
+=== Unknown D section ===
+
+<pre><nowiki>
+struct UnknownD
+{
+  uint32 count;
+  struct Unknown
+  {
+    uint16 unknown[4];
+  } unknown[];
+};
+</nowiki></pre>
+
+=== Spawn section ===
+
+Information about monsters and may be NPC.
+<pre><nowiki>
+struct Spawn
+{
+  uint32 count;
+  struct SpawnSection
+  {
+#ifdef MM6
+	char unknown[0x14];
+#else
+	char unknown[0x18];
+#endif
+    
+  } spawns[];
+};
+</nowiki></pre>
+
+=== Map outlines section ===
+
+Information about lines for drawing 2d map in right upper corner.
+<pre><nowiki>
+struct MapOutlines
+{
+  uint32 count;
+  struct outline
+  {
+    uint16 x1,y1,x2,y2,z,unk;
+  } outlines[];
+};
+</nowiki></pre>

@@ -1,0 +1,201 @@
+
+// Plans: test local vars, 13C, test cmd 18, test cmd 44 (what if he's dead), how to check for character existance in a slot, get index of char in a slot
+
+local int MMVersion = 8;
+typedef ushort EvtVarBase;
+
+enum <EvtVarBase> EvtVar
+{
+  // 01 = ?
+  Class 		= 0x02,
+  CurrentHP		= 0x03,
+  HasFullHP		= 0x04,
+  CurrentSP		= 0x05,
+  HasFullSP		= 0x06,
+  ArmorClass 		= 0x07,
+  ArmorClassBonus	= 0x08,
+  BaseLevel 		= 0x09,
+  LevelBonus		= 0x0A,
+  AgeBonus		= 0x0B,
+  AwardBits 		= 0x0C,
+  Experience		= 0x0D,
+  
+  QuestBits		= 0x10,
+  Inventory		= 0x11,
+  
+  Gold  		= 0x15,
+  GoldAddRandom		= 0x16, // adds random amount of gold between 1 and the specified value
+  Food  		= 0x17,
+  FoodAddRandom		= 0x18,
+  MightBonus		= 0x19,
+  IntellectBonus	= 0x1A,
+  PersonalityBonus	= 0x1B,
+  EnduranceBonus 	= 0x1C,
+  SpeedBonus		= 0x1D,
+  AccuracyBonus 	= 0x1E,
+  LuckBonus		= 0x1F,
+  BaseMight 		= 0x20,
+  BaseIntellect 	= 0x21,
+  BasePersonality	= 0x22,
+  BaseEndurance		= 0x23,
+  BaseSpeed 		= 0x24,
+  BaseAccuracy		= 0x25,
+  BaseLuck 	 	= 0x26,
+  CurrentMight		= 0x27,
+  CurrentIntellect	= 0x28,
+  CurrentPersonality	= 0x29,
+  CurrentEndurance	= 0x2A,
+  CurrentSpeed		= 0x2B,
+  CurrentAccuracy	= 0x2C,
+  CurrentLuck		= 0x2D,
+  FireResistance	= 0x2E,
+  AirResistance 	= 0x2F,
+  WaterResistance	= 0x30,
+  EarthResistance	= 0x31,
+
+  MindResistance	= 0x33,
+  BodyResistance	= 0x34,
+  
+  FireResBonus		= 0x39, // Doesn't show in stats :(
+  // <not sure>
+  AirResBonus		= 0x3A,
+  WaterResBonus 	= 0x3B,
+  EarthResBonus		= 0x3C,
+  
+  MindResBonus		= 0x3E,
+  BodyResBonus		= 0x3F,
+  // </not sure>
+  
+  StaffSkill		= 0x44,
+  SwordSkill		= 0x45,
+  DaggerSkill		= 0x46,
+  AxeSkill		= 0x47,
+  SpearSkill		= 0x48,
+  BowSkill		= 0x49,
+  MaceSkill		= 0x4A,
+  BlasterSkill		= 0x4B,
+  ShieldSkill		= 0x4C,
+  LeatherSkill		= 0x4D,
+  ChainSkill		= 0x4E,
+  PlateSkill		= 0x4F,
+  FireSkill		= 0x50,
+  AirSkill		= 0x51,
+  WaterSkill		= 0x52,
+  EarthSkill		= 0x53,
+  SpiritSkill		= 0x54,
+  MindSkill		= 0x55,
+  BodySkill		= 0x56,
+  LightSkill		= 0x57,
+  DarkSkill		= 0x58,
+  DarkElfSkill		= 0x59,
+  VampireSkill		= 0x5A,
+  DragonSkill		= 0x5B,
+  IdentifyItemSkill	= 0x5C,
+  MerchantSkill		= 0x5D,
+  RepairSkill		= 0x5E,
+  BodybuildingSkill	= 0x5F,
+  MeditationSkill	= 0x60,
+  PerceptionSkill	= 0x61,
+  RegenerationSkill	= 0x62,
+  DisarmTrapsSkill	= 0x63,
+  DodgingSkill		= 0x64,
+  UnarmedSkill		= 0x65,
+  IdentifyMonsterSkill	= 0x66,
+  ArmsmasterSkill	= 0x67,
+  StealingSkill		= 0x68,
+  AlchemySkill		= 0x69,
+  LearningSkill 	= 0x6A,
+  Cursed		= 0x6B,
+  Weak			= 0x6C,
+  Asleep		= 0x6D,
+  Afraid		= 0x6E,
+  Drunk			= 0x6F,
+  Insane		= 0x70,
+  PoisonedGreen		= 0x71,
+  DiseasedGreen		= 0x72,
+  PoisonedYellow	= 0x73,
+  DiseasedYellow	= 0x74,
+  PoisonedRed		= 0x75,
+  DiseasedRed		= 0x76,
+  Paralysed		= 0x77,
+  Unconsious		= 0x78,
+  Dead			= 0x79,
+  Stoned		= 0x7A,
+  Eradicated		= 0x7B,
+  // 7C - something related to character/party
+
+  // Local variables: 7D - 87, 9A, A4, AE-B2 (not sure that all of them are local, not global)
+  
+  // ATM equal 2: CB, CC, CD, CF
+  
+  AutonotesBits		= 0xE1,
+  // E2 - E8 - unknown bit (single bits)
+  PersonBits		= 0xE9, // like QBits, but person-specific. Used by contests
+  
+  FlyingBit		= 0xF2,
+  
+  // F4 - bitset or value
+  SkillPoints		= 0xF5,
+  MonthEquals 		= 0xF6, // zero-based
+  // Global counters:
+  // (incremented by 1 each day. Start counting when set to 0)
+  Counter1		= 0xF7,
+  Counter2		= 0xF8,
+  Counter3		= 0xF9,
+  Counter4		= 0xFA,
+  Counter5		= 0xFB,
+  Counter6		= 0xFC,
+  Counter7		= 0xFD,
+  Counter8		= 0xFE,
+  Counter9		= 0xFF,
+  Counter10		= 0x100,
+  
+  AntiReputation	= 0x115,
+  HistoryBit1		= 0x116, // not sure
+  HistoryBit2		= 0x117,
+  HistoryBit3		= 0x118,
+  HistoryBit4		= 0x119,
+  HistoryBit5		= 0x11A,
+  HistoryBit6		= 0x11B,
+  HistoryBit7		= 0x11C,
+  HistoryBit8		= 0x11D,
+  HistoryBit9		= 0x11E,
+  HistoryBit10		= 0x11F,
+  HistoryBit11		= 0x120,
+  HistoryBit12		= 0x121,
+  HistoryBit13		= 0x122,
+  HistoryBit14		= 0x123,
+  HistoryBit15		= 0x124,
+  HistoryBit16		= 0x125,
+  HistoryBit17		= 0x126,
+  HistoryBit18		= 0x127,
+  HistoryBit19		= 0x128,
+  HistoryBit20		= 0x129,
+  HistoryBit21		= 0x12A,
+  HistoryBit22		= 0x12B,
+  HistoryBit23		= 0x12C,
+  HistoryBit24		= 0x12D,
+  HistoryBit25		= 0x12E,
+  HistoryBit26		= 0x12F,
+  HistoryBit27		= 0x130,
+  HistoryBit28		= 0x131,
+  // maybe up to 30?
+  
+  GoldInBank		= 0x134,
+  
+  // 13C - ??? if it's set, the guards don't warn you that you cannot pass
+  
+  HiredNPCsBits		= 0x13E
+};
+
+enum <ubyte> TPartyMember
+{
+  Member0	= 0,
+  Member1	= 1,
+  Member2	= 2,
+  Member3	= 3,
+  Member4	= 4,
+  All   	= 5,
+  Random	= 6,
+  Current	= 7
+};

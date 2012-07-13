@@ -1,0 +1,139 @@
+
+#include "MMevtInclude.bt"
+
+EvtOnSizeChangedSet = true;
+EvtShowErrors = false;
+
+//EvtGenerateWholeDescription = true;
+
+//EvtFilter = 0x00;
+
+const int FileAddress = 2DA8h;
+//const int FileAddress = 11000h;
+
+// -----------------------------------------------------------------------------
+//  TSimpleFile
+
+typedef struct
+{
+  uchar Name[NameSize];
+  uint Address;
+  uint Size;
+  uint unused;
+  
+} TSimpleFile;
+
+// ----------------------------------------------------------------------------
+//  EvtOnSizeChanged
+
+void EvtOnSizeChanged(int dsize, int pos)
+{
+  WriteUInt(Size0, ReadUInt(Size0) + dsize);
+  WriteUInt(Size1, ReadUInt(Size1) + dsize);
+  WriteUInt(Size2, ReadUInt(Size2) + dsize);
+}
+
+//------------------------------------------------------
+//  TMoveUnpacked
+
+typedef struct
+{
+} TMoveUnpacked <write=WriteTMoveUnpacked>;
+
+void WriteTMoveUnpacked(TMoveUnpacked &a, string str)
+{
+  local int offSize = NameSize + 4;
+  local int offUSize = NameSize + 0x18;
+  local int offData = NameSize + 0x20;
+
+  if (evt_changed) return;
+  evt_changed = true;
+  
+  uint addr = ReadUInt(FileAddress + NameSize) + archiveStart;
+  uint size = ReadUInt(addr + offUSize);
+  uint copySize = offData;
+  
+  if (size == 0) // already unpacked
+  {
+    size = ReadUInt(addr + offSize);
+    copySize += size;
+  }
+  
+  uchar data[copySize];
+  ReadBytes(data, addr, copySize);
+  addr = FileSize();
+  WriteBytes(data, addr, copySize);
+  
+  WriteUInt(addr + offUSize, 0);
+  WriteUInt(addr + offSize, size);
+
+  size += offData;
+  WriteUInt(FileAddress + NameSize, addr - archiveStart);
+  WriteUInt(FileAddress + NameSize + 4, size);
+  
+  WriteUInt(Size0, ReadUInt(Size0) + size);
+  SetSelection(addr + offData, 0);
+}
+
+//------------------------------------------------------
+//  TResize
+//  (used when script data is pasted manually)
+
+typedef struct
+{
+} TResize <write=WriteTResize>;
+
+void WriteTResize(TResize &a, string str)
+{
+  int dsize = FileSize() - startof(a) - ReadUInt(Size2);
+  if (dsize != 0)
+    EvtOnSizeChanged(dsize, startof(a));
+}
+
+// -----------------------------------------------------------------------------
+// File 
+// -----------------------------------------------------------------------------
+
+LittleEndian();
+BitfieldEnablePadding();
+
+FSeek(4);
+string LodVersion;
+if (LodVersion == "MMVIII")
+  local int NameSize = 64;
+else
+  local int NameSize = 16;
+FSeek(0x110);
+uint ArchiveStart;
+local uint archiveStart = ArchiveStart;
+local int Size0 = FTell();
+
+FSeek(FileAddress);
+TSimpleFile File;
+
+FSeek(File.Address + ArchiveStart + NameSize + 4);
+int EvtSize;
+
+local int Size1 = startof(File.Size);
+local int Size2 = startof(EvtSize);
+
+FSeek(File.Address + ArchiveStart + NameSize + 0x20);
+if (ReadUInt(FTell() - 8) != 0 || FileSize() - FTell() != EvtSize)
+{
+  TMoveUnpacked MoveUnpacked;
+  
+}
+else
+{
+  if (EvtGenerateWholeDescription)
+    TComment WholeFile;
+  if (EvtShowErrors)
+    TComment Errors;
+  TResize Resize;
+
+  local int start = FTell();
+  while(FTell() - start < EvtSize)
+  {
+    TEvtCommand Command;
+  }
+}
